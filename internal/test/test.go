@@ -1,77 +1,49 @@
 package test
 
-import "bytes"
+import "github.com/bushmv/H/internal/test/directives"
 
-type Body struct {
-	LineNumber  int
-	ContentType string
-	Content     *bytes.Buffer
-}
-
-type Print struct {
-	LineNumber int
-	What       string
-}
-
-type Header struct {
-	LineNumber int
-	Key        string
-	Value      string
-}
-
-type Capture struct {
-	LineNumber int
-	Name       string
-	What       string
-}
-
-type Assert struct {
-	LineNumber int
-	What       string
-	Expected   string
-}
-
-type Query struct {
-	LineNumber int
-	Key        string
-	Value      string
-}
 type Test struct {
-	Method   string
-	URL      string
-	Body     *Body
-	Prints   []*Print
-	Headers  []*Header
-	Captures []*Capture
-	Asserts  []*Assert
-	Queries  []*Query
+	Request        *directives.Request
+	Body           *directives.Body
+	Prints         []*directives.Print
+	Headers        []*directives.Header
+	Captures       []*directives.Capture
+	Asserts        []directives.AssertableSubstitutable
+	Queries        []*directives.Query
+	SubstituteList []directives.Substituteable
+	Passed         bool
 }
 
-func NewTest(method string, url string) *Test {
+func NewTest(request *directives.Request) *Test {
 	return &Test{
-		Method:   method,
-		URL:      url,
-		Body:     nil,
-		Prints:   make([]*Print, 0),
-		Headers:  make([]*Header, 0),
-		Captures: make([]*Capture, 0),
-		Asserts:  make([]*Assert, 0),
-		Queries:  make([]*Query, 0),
+		Request:        request,
+		Body:           nil,
+		Prints:         make([]*directives.Print, 0),
+		Headers:        make([]*directives.Header, 0),
+		Captures:       make([]*directives.Capture, 0),
+		Asserts:        make([]directives.AssertableSubstitutable, 0),
+		Queries:        make([]*directives.Query, 0),
+		SubstituteList: make([]directives.Substituteable, 0),
+		Passed:         true,
 	}
 }
 
-func (t *Test) AddPrint(print *Print) {
+func (t *Test) AddPrint(print *directives.Print) {
 	t.Prints = append(t.Prints, print)
 }
 
-func (t *Test) AddHeader(header *Header) {
+func (t *Test) AddHeader(header *directives.Header) {
 	t.Headers = append(t.Headers, header)
 }
 
-func (t *Test) AddAssert(assert *Assert) {
+func (t *Test) AddAssert(assert directives.AssertableSubstitutable) {
 	t.Asserts = append(t.Asserts, assert)
 }
 
-func (t *Test) AddCapture(capture *Capture) {
+func (t *Test) AddCapture(capture *directives.Capture) {
 	t.Captures = append(t.Captures, capture)
+}
+
+func (t *Test) AddSubstitutable(substituteable directives.Substituteable) {
+	t.SubstituteList = append(t.SubstituteList, substituteable)
 }

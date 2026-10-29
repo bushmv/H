@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/bushmv/H/internal/executor"
@@ -22,24 +23,23 @@ func main() {
 	parser := parser.NewParser()
 	tests, err := parser.Parse(file, config.Filename)
 	if err != nil {
-		panic(err)
+		fmt.Print(err)
+		return
 	}
 
-	storage := executor.NewStorage()
-	templateProcessor := executor.NewTemplateProcessor()
-	executor := executor.NewExecutor(templateProcessor)
-	results, err := executor.Run(tests, storage)
+	executor := executor.NewExecutor()
+	results, err := executor.Run(tests)
 	if err != nil {
-		panic(err)
+		fmt.Print(err)
+		return
 	}
 
 	view := view.NewView()
 	view.Show(results)
-
 }
 
 func InitConfig() *Config {
-	filename := flag.String("filename", "test", "file with tests")
+	filename := flag.String("filename", "t", "file with tests")
 	config := &Config{
 		Filename: *filename,
 	}

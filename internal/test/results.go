@@ -1,12 +1,8 @@
 package test
 
-type AssertResult struct {
-	What     string
-	Expected string
-	Actual   string
-	Passed   bool
-	Details  string
-}
+import (
+	"github.com/bushmv/H/internal/test/directives"
+)
 
 type TestResult struct {
 	Method        string
@@ -28,4 +24,24 @@ func NewTestResult(method string, URL string, status string) *TestResult {
 		Captures:      make([]string, 0),
 		Passed:        false,
 	}
+}
+
+type AssertResult struct {
+	Passed  bool
+	Message string
+	Details string
+	directives.Source
+}
+
+func NewAssertResult(assert directives.Assertable) *AssertResult {
+	switch v := assert.(type) {
+	case *directives.EqualAssert:
+		return &AssertResult{
+			Passed:  v.Passed == directives.AssertResultPassed,
+			Message: v.Message(),
+			Details: v.Details(),
+			Source:  v.Source,
+		}
+	}
+	panic("unreachable")
 }
