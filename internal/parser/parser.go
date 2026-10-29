@@ -3,6 +3,7 @@ package parser
 import (
 	"bufio"
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -83,6 +84,8 @@ func (p *Parser) parseLine() error {
 		err = p.handleJsonBody(rest)
 	case "&":
 		err = p.handleCapture(rest)
+	case "@":
+		err = p.handleAuth(rest)
 	default:
 		return NewParsingError(fmt.Errorf("unknown prefix: %s", prefix), p.Source())
 	}
@@ -180,6 +183,29 @@ func (p *Parser) handleCapture(rest string) error {
 	}
 	capture := directives.NewCapture(name, what, p.Source())
 	p.current().AddCapture(capture)
+	return nil
+}
+
+func (p *Parser) handleAuth(rest string) error {
+	scheme, credentials, found := strings.Cut(rest, " ")
+	if !found {
+		err := fmt.Errorf("invalid format for auth, use: @ SCHEMA CREDENTIALS")
+		return NewParsingError(err, p.Source())
+	}
+	switch strings.ToLower(scheme) {
+	case "basic":
+		credentials = strings.TrimSpace(credentials)
+		if !strings.Contains(credentials, ":") {
+			err := fmt.Errorf("invalid format for basic auth, use: @ basic login:password")
+			return NewParsingError(err, p.Source())
+		}
+		value := "Basic " + base64.StdEncoding.EncodeToString([]byte(credentials))
+		header := directives.NewHeader("Authorization", value, p.Source())
+		p.current().AddHeader(header)
+	default:
+		err := fmt.Errorf("unknown auth type")
+		return NewParsingError(err, p.Source())
+	}
 	return nil
 }
 
