@@ -114,16 +114,15 @@ func saveResponse(res *http.Response, storage *Storage) error {
 	return nil
 }
 
-func addPrintsToResult(t *test.Test, storage *Storage) ([]string, error) {
-	prints := make([]string, 0, len(t.Prints))
+func addPrintsToResult(t *test.Test, storage *Storage) ([]test.PrintResult, error) {
+	prints := make([]test.PrintResult, 0, len(t.Prints))
 	for _, print := range t.Prints {
 		what := print.What
 		val, err := storage.Get(what)
 		if err != nil {
 			return nil, NewExecutionError(err, print.Source)
 		}
-		out := fmt.Sprintf("%s: %s", what, val)
-		prints = append(prints, out)
+		prints = append(prints, test.PrintResult{What: print.What, Value: val})
 	}
 	return prints, nil
 }

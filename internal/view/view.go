@@ -1,7 +1,10 @@
 package view
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/bushmv/H/internal/test"
 )
@@ -49,9 +52,19 @@ func showAsserts(assertResults []*test.AssertResult) {
 	}
 }
 
-func showPrints(prints []string) {
+func showPrints(prints []test.PrintResult) {
 	for _, print := range prints {
-		fmt.Printf("    > %s\n", print)
+		if strings.HasPrefix(print.What, "json") && json.Valid([]byte(print.Value)) {
+			buffer := bytes.NewBuffer([]byte{})
+			// The error is impossible due to the validity check above
+			_ = json.Indent(buffer, []byte(print.Value), "    ", "    ")
+			print.Value = buffer.String()
+		} else if print.What == "headers" {
+			rows := strings.Split(print.Value, "0x1E")
+
+			print.Value = fmt.Sprintf("\n        %s", strings.Join(rows, "\n        "))
+		}
+		fmt.Printf("    > %s: %s\n", print.What, print.Value)
 	}
 }
 

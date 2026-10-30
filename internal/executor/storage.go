@@ -109,7 +109,8 @@ func (s *Storage) getHeader(what string) (string, error) {
 			row := fmt.Sprintf("%s: %s", key, values)
 			result = append(result, row)
 		}
-		return strings.Join(result, "; "), nil
+		// 0x1E - RECORD SEPARATOR
+		return strings.Join(result, "0x1E"), nil
 	}
 	parts := strings.Split(what, ".")
 	if len(parts) != 2 {
@@ -124,6 +125,10 @@ func (s *Storage) getHeader(what string) (string, error) {
 }
 
 func (s *Storage) getVar(what string) (string, error) {
+	if what == "vars" {
+		val := fmt.Sprintf("%v", s.vars)
+		return val, nil
+	}
 	val, ok := s.vars[what]
 	if !ok {
 		return "", fmt.Errorf("%s not found", what)
