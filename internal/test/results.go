@@ -8,10 +8,15 @@ type TestResult struct {
 	Method        string
 	URL           string
 	Status        string
-	Prints        []string
+	Prints        []PrintResult
 	AssertResults []*AssertResult
 	Captures      []string
 	Passed        bool
+}
+
+type PrintResult struct {
+	What  string
+	Value string
 }
 
 func NewTestResult(method string, URL string, status string) *TestResult {
@@ -19,7 +24,7 @@ func NewTestResult(method string, URL string, status string) *TestResult {
 		Method:        method,
 		URL:           URL,
 		Status:        status,
-		Prints:        make([]string, 0),
+		Prints:        make([]PrintResult, 0),
 		AssertResults: make([]*AssertResult, 0),
 		Captures:      make([]string, 0),
 		Passed:        false,
